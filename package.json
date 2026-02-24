@@ -3,12 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "ci": "npm ci && npm run build && npm run lint",
+    "ci": "pnpm install --frozen-lockfile && pnpm run build && pnpm run lint",
     "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64"
   },
   "dependencies": {

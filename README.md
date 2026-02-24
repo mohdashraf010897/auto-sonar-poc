@@ -4,31 +4,33 @@ React + TypeScript todo app (Vite), with SonarCloud analysis and GitHub Actions.
 
 ## Setup
 
+Uses [pnpm](https://pnpm.io). Install with `corepack enable && corepack prepare pnpm@latest --activate` or `npm i -g pnpm`.
+
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
 ## Scripts
 
-- `npm run dev` – dev server
-- `npm run build` – production build
-- `npm run preview` – preview production build
-- `npm run lint` – ESLint
-- `npm run ci` – same as CI (install, build, lint). Run before pushing.
+- `pnpm run dev` – dev server
+- `pnpm run build` – production build
+- `pnpm run preview` – preview production build
+- `pnpm run lint` – ESLint
+- `pnpm run ci` – same as CI (install, build, lint). Run before pushing.
 
 ## Run the GitHub workflow locally
 
 - **Same commands, no runner:**  
-  `npm run ci` — runs install + build + lint (Sonar step is skipped without `SONAR_TOKEN`).
+  `pnpm run ci` — runs install + build + lint (Sonar step is skipped without `SONAR_TOKEN`).
 
 - **Same workflow in a container (like CI):**  
   [act](https://github.com/nektos/act) runs the Build workflow in Docker. **Docker must be running** (e.g. Docker Desktop).
 
   ```bash
-  npm run act
+  pnpm run act
   ```
 
   First run may pull the runner image (~500MB). To run Sonar locally: `npm run act -- -s SONAR_TOKEN=your_token`.
