@@ -1,5 +1,9 @@
 # After Build (Sonar) completes, fetch issues from SonarCloud and open/update a PR
 # with the issue list in the description. No file changes.
+#
+# PR creation requires one of:
+# - Repo setting: Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests"
+# - Or add a Personal Access Token (repo + pull_requests) as secret PR_BOT_TOKEN
 
 name: Sonar issues report PR
 
@@ -63,12 +67,14 @@ jobs:
 
       - name: Push report branch and create/update PR
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH="bot/sonar-issues-report"
           git checkout -B "$BRANCH"
+          # GitHub requires at least one commit ahead of base to create a PR; use empty commit (no file changes)
+          git commit --allow-empty -m "Sonar issues report [bot]"
           git push origin "$BRANCH" --force
 
           PR_NUM=$(gh pr list --head "$BRANCH" --base main --json number -q '.[0].number' 2>/dev/null || true)
