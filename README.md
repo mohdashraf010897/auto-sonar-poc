@@ -39,6 +39,8 @@ Open [http://localhost:5173](http://localhost:5173).
 
 The **Build** workflow runs on push/PR to `main`: install → build → lint → SonarCloud scan.
 
+After each successful Build on `main`, the **Sonar issues report PR** workflow fetches open issues from SonarCloud and opens or updates a PR (branch `bot/sonar-issues-report`) with the issue list in the description only—no file changes.
+
 1. In [SonarCloud](https://sonarcloud.io), connect this repo and disable Automatic Analysis (use CI).
 2. Add **SONAR_TOKEN** to repo **Settings → Secrets and variables → Actions**.
 3. Optionally set **SONAR_ORGANIZATION** and **SONAR_PROJECT_KEY** if your project key differs from `owner_repo`.
