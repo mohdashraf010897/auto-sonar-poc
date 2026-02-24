@@ -1,0 +1,25 @@
+# AI-generated / reference docs (see .cursor/rules/cursor-outputs.mdc)
+cursor_outputs/
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.DS_Store
+*.local
+
+# Test / coverage
+coverage/

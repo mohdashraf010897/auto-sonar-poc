@@ -1,0 +1,18 @@
+---
+description: Put all AI-generated conversation docs and outputs in cursor_outputs/ to keep the workspace clean
+alwaysApply: true
+---
+
+# Cursor outputs: keep workspace clean
+
+- **All AI-generated conversation docs and outputs** (reports, summaries, setup guides, feasibility docs, generated markdown, etc.) must be written to **`cursor_outputs/`** at the project root, not in the repo root or scattered under `mock-repo/`, `src/`, or other workspace folders.
+- Create **`cursor_outputs/`** if it does not exist before writing any such file.
+- Only write to a path **outside** `cursor_outputs/` when the user explicitly asks for a specific path (e.g. "put the README in mock-repo").
+- This keeps the main workspace and repo layout clean and avoids mixing AI conversation artifacts with real project code and docs.
+
+## Examples
+
+- New feasibility doc → `cursor_outputs/feasibility-analysis.md`
+- Setup or “how to” guide → `cursor_outputs/setup-guide.md`
+- Session summary or report → `cursor_outputs/<descriptive-name>.md`
+- Code and config that are part of the actual project (e.g. mock-repo, workflows, scripts) stay in their current locations; only **conversation-style outputs and standalone docs** go under `cursor_outputs/`.

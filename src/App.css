@@ -1,0 +1,93 @@
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.app h1 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.add input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.add input:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.add button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.add button:hover {
+  background: #535bf2;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.list li.done span {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.list li input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+.list li span {
+  flex: 1;
+}
+
+.list li button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: #c00;
+  background: transparent;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.list li button:hover {
+  background: #fee;
+}
+
+.empty {
+  color: #888;
+  text-align: center;
+  padding: 2rem;
+}
