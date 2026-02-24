@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "ci": "npm ci && npm run build && npm run lint"
+    "ci": "npm ci && npm run build && npm run lint",
+    "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64"
   },
   "dependencies": {
     "react": "^19.2.0",

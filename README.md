@@ -19,6 +19,20 @@ Open [http://localhost:5173](http://localhost:5173).
 - `npm run lint` – ESLint
 - `npm run ci` – same as CI (install, build, lint). Run before pushing.
 
+## Run the GitHub workflow locally
+
+- **Same commands, no runner:**  
+  `npm run ci` — runs install + build + lint (Sonar step is skipped without `SONAR_TOKEN`).
+
+- **Same workflow in a container (like CI):**  
+  [act](https://github.com/nektos/act) runs the Build workflow in Docker. **Docker must be running** (e.g. Docker Desktop).
+
+  ```bash
+  npm run act
+  ```
+
+  First run may pull the runner image (~500MB). To run Sonar locally: `npm run act -- -s SONAR_TOKEN=your_token`.
+
 ## SonarCloud
 
 The **Build** workflow runs on push/PR to `main`: install → build → lint → SonarCloud scan.
