@@ -41,6 +41,8 @@ The **Build** workflow runs on push/PR to `main`: install → build → lint →
 
 After each successful Build on `main`, the **Sonar issues report PR** workflow fetches open issues from SonarCloud and opens or updates a PR (branch `bot/sonar-issues-report`) with the issue list in the description only—no file changes.
 
+**If the workflow fails with "GitHub Actions is not permitted to create or approve pull requests":** either enable **Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests"**, or add a Personal Access Token (scopes: `repo`, `workflow`) as repo secret **PR_BOT_TOKEN**.
+
 1. In [SonarCloud](https://sonarcloud.io), connect this repo and disable Automatic Analysis (use CI).
 2. Add **SONAR_TOKEN** to repo **Settings → Secrets and variables → Actions**.
 3. Optionally set **SONAR_ORGANIZATION** and **SONAR_PROJECT_KEY** if your project key differs from `owner_repo`.

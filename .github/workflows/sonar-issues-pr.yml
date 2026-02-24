@@ -65,6 +65,21 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies (for codemods)
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Sonar codemods
+        run: node scripts/sonar-fixer/run.cjs /tmp/issues.json
+
       - name: Push report branch and create/update PR
         env:
           GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || github.token }}
@@ -73,8 +88,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH="bot/sonar-issues-report"
           git checkout -B "$BRANCH"
-          # GitHub requires at least one commit ahead of base to create a PR; use empty commit (no file changes)
-          git commit --allow-empty -m "Sonar issues report [bot]"
+          if git diff --quiet && git diff --cached --quiet; then
+            git commit --allow-empty -m "Sonar issues report [bot]"
+          else
+            git add -A
+            git commit -m "Fix Sonar issues (codemods: S1481, S2228/S106)"
+          fi
           git push origin "$BRANCH" --force
 
           PR_NUM=$(gh pr list --head "$BRANCH" --base main --json number -q '.[0].number' 2>/dev/null || true)

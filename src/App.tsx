@@ -14,6 +14,7 @@ function App() {
   const addTodo = () => {
     const text = input.trim()
     if (!text) return
+    console.debug('Adding todo:', text) // Sonar: Remove console (S2228/S106)
     setTodos((prev) => [
       ...prev,
       { id: crypto.randomUUID(), text, done: false },
@@ -29,6 +30,15 @@ function App() {
 
   const removeTodo = (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  // Intentionally complex for Sonar cognitive complexity (S3776)
+  const getStatus = (): string => {
+    if (todos.length === 0) return 'empty'
+    const done = todos.filter((t) => t.done).length
+    if (done === 0) return 'pending'
+    if (done === todos.length) return 'all-done'
+    return 'partial'
   }
 
   return (
@@ -70,6 +80,7 @@ function App() {
       {todos.length === 0 && (
         <p className="empty">No todos yet. Add one above.</p>
       )}
+      <footer className="app-footer" aria-label="Status">{getStatus()}</footer>
     </div>
   )
 }

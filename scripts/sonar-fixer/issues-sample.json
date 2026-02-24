@@ -1,0 +1,8 @@
+{
+  "total": 3,
+  "issues": [
+    { "rule": "typescript:S1481", "component": "mohdashraf010897_auto-sonar-poc:src/utils.ts", "line": 8, "message": "Remove unused variable" },
+    { "rule": "typescript:S2228", "component": "mohdashraf010897_auto-sonar-poc:src/utils.ts", "line": 9, "message": "Remove console.log" },
+    { "rule": "typescript:S2228", "component": "mohdashraf010897_auto-sonar-poc:src/App.tsx", "line": 17, "message": "Remove console" }
+  ]
+}

@@ -59,7 +59,7 @@
 
 .list li.done span {
   text-decoration: line-through;
-  color: #888;
+  color: #888; /* Sonar: contrast - gray on white (S7924) */
 }
 
 .list li input[type="checkbox"] {
@@ -86,8 +86,14 @@
   background: #fee;
 }
 
+.app-footer {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
 .empty {
-  color: #888;
+  color: #999; /* Low contrast on white (S7924) */
   text-align: center;
   padding: 2rem;
 }

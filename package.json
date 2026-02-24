@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "ci": "pnpm install --frozen-lockfile && pnpm run build && pnpm run lint",
-    "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64"
+    "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64",
+    "fixer": "node scripts/sonar-fixer/run.cjs"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -26,6 +27,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jscodeshift": "^17.3.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "vite": "^7.3.1"
