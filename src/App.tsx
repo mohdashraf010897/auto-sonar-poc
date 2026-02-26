@@ -42,8 +42,25 @@ function App() {
     return 'unknown'
   }
 
+  // S134 — deep nesting (4+ levels) for Sonar demo
+  const renderNested = () => {
+    if (todos.length > 0) {
+      if (todos.some((t) => t.done)) {
+        if (todos.every((t) => t.done)) {
+          if (input.length > 0) {
+            return 'all-done-with-input'
+          }
+          return 'all-done'
+        }
+        return 'partial'
+      }
+      return 'pending'
+    }
+    return 'empty'
+  }
+
   return (
-    <div className="app">
+    <div className="app" data-testid={renderNested()}>
       <h1>Todo</h1>
       <div className="add">
         <input

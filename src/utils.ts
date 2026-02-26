@@ -1,5 +1,5 @@
 /**
- * Intentionally added for SonarCloud demo: unused variable, console, duplicate literal.
+ * Intentionally added for SonarCloud demo: console, duplicate literals, complexity, too many params.
  */
 
 const DEFAULT_LABEL = 'todo'
@@ -15,9 +15,28 @@ export function formatTodoText(text: string): string {
 // Duplicate string literal — Sonar S1192 (reuse DEFAULT_LABEL instead)
 export const TODO_PREFIX = DEFAULT_LABEL
 
+// More S1192 — repeated 'todo' and 'error' literals
+export function getTypeLabel(type: string): string {
+  if (type === 'todo') return 'Todo'
+  if (type === 'task') return 'Todo'
+  return type
+}
+
+export function getErrorKind(code: number): string {
+  if (code === 0) return 'error'
+  if (code === 1) return 'error'
+  if (code === 2) return 'warning'
+  return 'error'
+}
+
 // console.log in production code — Sonar S2228
 export function debugLog(msg: string): void {
   console.log(msg)
+}
+
+// S2228 — console.error
+export function reportError(msg: string): void {
+  console.error(msg)
 }
 
 // Intentionally high cognitive complexity + long — Sonar S3776 / S138
@@ -37,4 +56,18 @@ export function classifyTodoStatus(
   if (total > 50) return 'medium'
   if (total > 10) return 'small'
   return 'unknown'
+}
+
+// S107 — too many parameters (8+)
+export function mergeFields(
+  f1: string,
+  f2: string,
+  f3: string,
+  f4: string,
+  f5: string,
+  f6: string,
+  f7: string,
+  f8: string
+): string {
+  return [f1, f2, f3, f4, f5, f6, f7, f8].join('-')
 }

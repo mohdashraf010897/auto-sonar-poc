@@ -44,3 +44,17 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 **One-off (no full pipeline):**  
 With `sonar-issues.json` and `ANTHROPIC_API_KEY`: `node scripts/ai-fix-sonar.js` → then apply (inline node snippet in workflow) → `pnpm run build && pnpm run lint`.
 
+---
+
+## Induced issues (for scanner testing)
+
+To force the scanner to report many issues (e.g. 10+), the following violations are intentionally present:
+
+| File | Rules triggered |
+|------|------------------|
+| **src/validation.ts** | S2228 (console.warn), S1135 (TODO), S1192 (duplicate 'invalid'/'error'/'valid'), S107 (buildMessage 8 params), S1479 (getCategoryCode switch 12 cases), S134 (deepCheck 4-level nesting), S3776/S138 (classifyPriority) |
+| **src/utils.ts** | S1192 (duplicate 'Todo'/'error'), S2228 (console.log, console.error), S3776/S138 (classifyTodoStatus), S107 (mergeFields 8 params) |
+| **src/App.tsx** | S3776 (getStatus cognitive complexity), S134 (renderNested 4-level nesting) |
+
+After a Sonar scan, the API returns these so the AI fixer can address multiple issues per run. Remove or refactor these when no longer needed.
+
