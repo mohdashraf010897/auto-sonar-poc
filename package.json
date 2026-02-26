@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "ci": "pnpm install --frozen-lockfile && pnpm run build && pnpm run lint",
-    "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64"
+    "act": "act push -P ubuntu-latest=catthehacker/ubuntu:act-latest --container-architecture linux/amd64",
+    "sonar-fix:local": "node scripts/run-sonar-fix-local.js"
   },
   "dependencies": {
     "react": "^19.2.0",

@@ -77,7 +77,7 @@ The plan below is the target design for adding an **auto-fixer** that:
 
 | Step | What they do |
 |------|----------------|
-| 1 | SonarQube scan in CI (`sonarqube-scan-action`), then fetch issues via API (`/api/issues/search`, `componentKeys`, `severities=MAJOR,CRITICAL,BLOCKER`). |
+| 1 | SonarQube scan in CI (`sonarqube-scan-action`), then fetch issues via API (`/api/issues/search`, `projectKeys`, `severities=MAJOR,CRITICAL,BLOCKER,MINOR`). |
 | 2 | **Node.js script** + **Anthropic Claude**: for each issue, read file → take **±5 lines around `issue.line`** as context → prompt: rule, message, severity, file, line + code block → ask for **fixed code for that context only** (no explanation). Strip markdown from response, store in `ai-fixes.json`. |
 | 3 | **Apply fixes**: replace `fix.original` with `fix.fixed` in each file. Then **`npm test`** and **`npm run lint`**. If either fails, skip or log (don’t merge). |
 | 4 | **Create PR** with `peter-evans/create-pull-request@v6` (branch e.g. `sonar-ai-fixes-$run_number`). Human review before merge. |

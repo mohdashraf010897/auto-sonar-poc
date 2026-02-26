@@ -49,7 +49,7 @@ jobs:
             exit 0
           fi
           curl -s -u "$SONAR_TOKEN:" \
-            "${SONAR_HOST_URL}/api/issues/search?projectKeys=${SONAR_PROJECT}&resolved=false&severities=MAJOR,CRITICAL,BLOCKER&ps=100" \
+            "${SONAR_HOST_URL}/api/issues/search?projectKeys=${SONAR_PROJECT}&resolved=false&severities=MAJOR,CRITICAL,BLOCKER,MINOR&ps=100" \
             -o sonar-issues.json
           ISSUE_COUNT=$(jq '.total // (.issues | length)' sonar-issues.json)
           echo "found_issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
@@ -80,6 +80,8 @@ jobs:
           node -e "
           const fs = require('fs');
           const fixes = JSON.parse(fs.readFileSync('ai-fixes.json', 'utf-8'));
+          // Apply bottom-to-top by (file, line) so earlier replacements don't invalidate later ones
+          fixes.sort((a, b) => (a.file !== b.file ? a.file.localeCompare(b.file) : b.line - a.line));
           for (const fix of fixes) {
             let content = fs.readFileSync(fix.file, 'utf-8');
             content = content.replace(fix.original, fix.fixed);

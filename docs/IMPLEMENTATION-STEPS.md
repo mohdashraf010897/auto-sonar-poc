@@ -11,7 +11,7 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 
 1. **Checkout** — full history (`fetch-depth: 0`).
 2. **SonarQube Scan** — `sonarsource/sonarqube-scan-action@v2` (SONAR_TOKEN, SONAR_HOST_URL; args: projectKey, sources, exclusions). Works with SonarCloud when SONAR_HOST_URL=https://sonarcloud.io.
-3. **Get SonarQube Issues** — `sleep 10` then `curl` to `/api/issues/search?projectKeys=...&resolved=false&severities=MAJOR,CRITICAL,BLOCKER&ps=100` → `sonar-issues.json`; output `found_issues` from `.total`.
+3. **Get SonarQube Issues** — `sleep 10` then `curl` to `/api/issues/search?projectKeys=...&resolved=false&severities=MAJOR,CRITICAL,BLOCKER,MINOR&ps=100` → `sonar-issues.json`; output `found_issues` from `.total`. (MINOR included so cognitive complexity, duplicate literals, console.log, etc. are fetched.)
 4. **Setup Node.js 22** — `actions/setup-node@v4` with node-version 22.
 5. **Install Dependencies** — `pnpm install --frozen-lockfile` (includes `@anthropic-ai/sdk`).
 6. **Generate AI Fixes** — if `found_issues > 0`: `node scripts/ai-fix-sonar.js` (reads `sonar-issues.json`, ±5 lines context, Claude, writes `ai-fixes.json`).
@@ -22,7 +22,7 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 **Secrets:** `SONAR_TOKEN`, `SONAR_HOST_URL` (e.g. `https://sonarcloud.io`), `ANTHROPIC_API_KEY`.  
 **Vars (optional):** `SONAR_PROJECT`.
 
-**Script:** `scripts/ai-fix-sonar.js` — matches article: `issues.issues`, `issue.component.split(':')[1]`, `contextStart = issue.line - 5`, `contextEnd = issue.line + 5`, prompt and Claude call, write `ai-fixes.json`.
+**Script:** `scripts/ai-fix-sonar.js` — Claude as developer/Sonar fixer; ±CONTEXT_LINES (default 12) around issue line; larger context (≥15) for complexity rules (S3776, S138, S1541). Prompt asks for proper refactors (extract helpers, reduce complexity). Writes `ai-fixes.json`. Env: `CONTEXT_LINES`, `ANTHROPIC_MODEL`.
 
 ---
 
@@ -33,11 +33,14 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 3. With `found_issues > 0` and `ANTHROPIC_API_KEY`: AI fixes generated, applied, build/lint and security check run, PR created.
 4. Check the PR title "🤖 AI Fix: SonarQube Code Quality Issues" and body (fixed count, model, validation).
 
-**Local test (no API key):**  
-- `sonar-issues.json` and a manual `ai-fixes.json` are in repo (or create mock).  
-- Apply: `node -e "const fs=require('fs');const fixes=JSON.parse(fs.readFileSync('ai-fixes.json','utf-8'));for(const f of fixes){let c=fs.readFileSync(f.file,'utf-8');fs.writeFileSync(f.file,c.replace(f.original,f.fixed));}"`  
-- Then `pnpm run build && pnpm run lint`.
+**Local test (recommended before pushing):**  
+1. Ensure `.env` has `ANTHROPIC_API_KEY`. Optionally set `SONAR_TOKEN`, `SONAR_HOST_URL`, `SONAR_PROJECT` to fetch fresh issues.  
+2. Run: `pnpm run sonar-fix:local`  
+   - Fetches issues (if credentials set) or uses existing `sonar-issues.json`.  
+   - Generates fixes with Claude, applies them, runs build and lint.  
+3. Review: `git diff` (and `git diff --stat`).  
+4. If satisfied: commit and push. If not: `git checkout -- src/` (and any other modified files) to discard.
 
-**Local test (with Claude):**  
-Set `ANTHROPIC_API_KEY`, ensure `sonar-issues.json` exists (from API or use the mock), run `node scripts/ai-fix-sonar.js` → then apply (as above) and build/lint.
+**One-off (no full pipeline):**  
+With `sonar-issues.json` and `ANTHROPIC_API_KEY`: `node scripts/ai-fix-sonar.js` → then apply (inline node snippet in workflow) → `pnpm run build && pnpm run lint`.
 
