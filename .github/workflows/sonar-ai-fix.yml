@@ -103,7 +103,7 @@ jobs:
 
       - name: Clean scanner artifacts before PR
         if: steps.sonar_issues.outputs.found_issues > 0
-        run: rm -rf .scannerwork
+        run: sudo rm -rf .scannerwork
 
       - name: Create Fix PR
         if: steps.sonar_issues.outputs.found_issues > 0
