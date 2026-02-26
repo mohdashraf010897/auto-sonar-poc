@@ -1,0 +1,118 @@
+# SonarQube + AI Auto-Fix — follows Markaicode article (Feb 2026).
+# Secrets: SONAR_TOKEN, SONAR_HOST_URL (e.g. https://sonarcloud.io), ANTHROPIC_API_KEY
+# Vars (optional): SONAR_PROJECT (projectKey), SONAR_ORGANIZATION (for SonarCloud)
+
+name: SonarQube + AI Auto-Fix
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT || 'mohdashraf010897_auto-sonar-poc' }}
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/*test*/**
+        continue-on-error: true
+
+      - name: Get SonarQube Issues
+        id: sonar_issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'mohdashraf010897_auto-sonar-poc' }}
+        run: |
+          sleep 10
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_HOST_URL" ]; then
+            echo '{"total":0,"issues":[]}' > sonar-issues.json
+            echo "found_issues=0" >> $GITHUB_OUTPUT
+            echo "No SONAR_TOKEN or SONAR_HOST_URL — skipping fetch."
+            exit 0
+          fi
+          curl -s -u "$SONAR_TOKEN:" \
+            "${SONAR_HOST_URL}/api/issues/search?projectKeys=${SONAR_PROJECT}&resolved=false&severities=MAJOR,CRITICAL,BLOCKER&ps=100" \
+            -o sonar-issues.json
+          ISSUE_COUNT=$(jq '.total // (.issues | length)' sonar-issues.json)
+          echo "found_issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            echo "Found $ISSUE_COUNT issues requiring fixes"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate AI Fixes
+        if: steps.sonar_issues.outputs.found_issues > 0
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/ai-fix-sonar.js
+
+      - name: Apply Fixes with Validation
+        if: steps.sonar_issues.outputs.found_issues > 0
+        run: |
+          node -e "
+          const fs = require('fs');
+          const fixes = JSON.parse(fs.readFileSync('ai-fixes.json', 'utf-8'));
+          for (const fix of fixes) {
+            let content = fs.readFileSync(fix.file, 'utf-8');
+            content = content.replace(fix.original, fix.fixed);
+            fs.writeFileSync(fix.file, content);
+          }
+          "
+          pnpm run build
+          pnpm run lint
+
+      - name: Security Scan on Fixes
+        if: steps.sonar_issues.outputs.found_issues > 0
+        run: |
+          if grep -r "eval(" src/ 2>/dev/null; then
+            echo "::error::AI introduced eval() - rejecting fixes"
+            exit 1
+          fi
+          if grep -r "dangerouslySetInnerHTML" src/ 2>/dev/null; then
+            echo "::error::AI introduced XSS risk - manual review required"
+            exit 1
+          fi
+
+      - name: Create Fix PR
+        if: steps.sonar_issues.outputs.found_issues > 0
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'fix: Auto-resolve SonarQube issues with AI'
+          title: '🤖 AI Fix: SonarQube Code Quality Issues'
+          body: |
+            This PR automatically fixes SonarQube issues detected in the latest scan.
+
+            **Fixed Issues:** ${{ steps.sonar_issues.outputs.found_issues }} issues addressed
+
+            **AI Model:** Claude Sonnet 4
+            **Validation:** Build and lint passed ✅
+
+            Please review the changes before merging.
+          branch: sonar-ai-fixes-${{ github.run_number }}
+          delete-branch: true

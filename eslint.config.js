@@ -4,7 +4,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default [
-  { ignores: ['dist/**', 'node_modules/**', 'cursor_outputs/**', 'scripts/sonar-fixer/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'cursor_outputs/**', 'scripts/sonar-fixer/**', '.venv-auto-fixer/**', '.venv/**'] },
+  { files: ['scripts/**/*.js'], languageOptions: { globals: { process: 'readonly', console: 'readonly' } } },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {

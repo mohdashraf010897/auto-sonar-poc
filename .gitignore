@@ -3,11 +3,16 @@ cursor_outputs/
 
 # Dependencies
 node_modules/
+.venv-auto-fixer/
 package-lock.json
 
 # Build
 dist/
 build/
+
+# Auto-fixer artifacts (CI writes these; don’t commit)
+sonar-issues.json
+ai-fixes.json
 
 # Env
 .env

@@ -14,7 +14,6 @@ function App() {
   const addTodo = () => {
     const text = input.trim()
     if (!text) return
-    console.debug('Adding todo:', text) // Sonar: Remove console (S2228/S106)
     setTodos((prev) => [
       ...prev,
       { id: crypto.randomUUID(), text, done: false },
