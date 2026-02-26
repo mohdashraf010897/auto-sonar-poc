@@ -101,6 +101,10 @@ jobs:
             exit 1
           fi
 
+      - name: Clean scanner artifacts before PR
+        if: steps.sonar_issues.outputs.found_issues > 0
+        run: rm -rf .scannerwork
+
       - name: Create Fix PR
         if: steps.sonar_issues.outputs.found_issues > 0
         uses: peter-evans/create-pull-request@v6

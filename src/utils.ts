@@ -12,5 +12,10 @@ export function formatTodoText(text: string): string {
   return text.trim()
 }
 
-// Use existing constant instead of duplicating literal
-export const TODO_PREFIX = DEFAULT_LABEL
+// Duplicate string literal — Sonar S1192 (reuse DEFAULT_LABEL instead)
+export const TODO_PREFIX = 'todo'
+
+// console.log in production code — Sonar S2228
+export function debugLog(msg: string): void {
+  console.log(msg)
+}

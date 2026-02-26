@@ -14,6 +14,9 @@ build/
 sonar-issues.json
 ai-fixes.json
 
+# Sonar scanner output (left by sonarqube-scan-action in CI)
+.scannerwork/
+
 # Env
 .env
 .env.local
