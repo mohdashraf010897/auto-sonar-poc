@@ -31,13 +31,15 @@ function App() {
     setTodos((prev) => prev.filter((t) => t.id !== id))
   }
 
-  // Intentionally complex for Sonar cognitive complexity (S3776)
+  // Intentionally high cognitive complexity for Sonar S3776
   const getStatus = (): string => {
     if (todos.length === 0) return 'empty'
     const done = todos.filter((t) => t.done).length
     if (done === 0) return 'pending'
     if (done === todos.length) return 'all-done'
-    return 'partial'
+    if (done > 0 && done < todos.length) return 'partial'
+    if (todos.some((t) => t.done) && todos.some((t) => !t.done)) return 'partial'
+    return 'unknown'
   }
 
   return (

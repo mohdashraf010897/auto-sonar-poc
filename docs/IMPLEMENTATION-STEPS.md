@@ -6,7 +6,7 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 
 ## Current pipeline (article flow)
 
-**Workflow:** `.github/workflows/sonar-ai-fix.yml`  
+**Workflow:** `.github/workflows/sonar-ai-fix.yml` (only Sonar automation; report-only `sonar-issues-pr.yml` removed).  
 **Triggers:** `pull_request` on main/develop, `push` on main.
 
 1. **Checkout** — full history (`fetch-depth: 0`).
