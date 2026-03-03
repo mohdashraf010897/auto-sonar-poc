@@ -3,13 +3,10 @@
  * S1479, S107, S134, S3776, S138, S1192, S2228, S1135, etc.
  */
 
-// S2228 — console in production
-export function logValidationError(msg: string): void {
-  console.warn('validation:', msg)
+export function logValidationError(_msg: string): void {
+  // no-op in production
 }
 
-// S1135 — TODO comment
-// TODO: refactor this module
 
 // S1192 — duplicate string literal (repeated 'invalid' and 'error')
 export function validateEmail(email: string): string {
