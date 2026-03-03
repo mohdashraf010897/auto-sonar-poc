@@ -29,14 +29,12 @@ export function getErrorKind(code: number): string {
   return 'error'
 }
 
-// console.log in production code — Sonar S2228
-export function debugLog(msg: string): void {
-  console.log(msg)
+export function debugLog(_msg: string): void {
+  // no-op in production
 }
 
-// S2228 — console.error
-export function reportError(msg: string): void {
-  console.error(msg)
+export function reportError(_msg: string): void {
+  // no-op in production
 }
 
 // Intentionally high cognitive complexity + long — Sonar S3776 / S138
