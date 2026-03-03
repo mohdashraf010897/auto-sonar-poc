@@ -12,30 +12,25 @@ export function logValidationError(msg: string): void {
 // TODO: refactor this module
 
 // S1192 — duplicate string literal (repeated 'invalid' and 'error')
+const VALIDATION_INVALID = 'invalid'
+const VALIDATION_ERROR = 'error'
+const VALIDATION_VALID = 'valid'
+
 export function validateEmail(email: string): string {
-  if (!email.includes('@')) return 'invalid'
-  if (!email.includes('.')) return 'invalid'
-  return 'valid'
+  if (!email.includes('@')) return VALIDATION_INVALID
+  if (!email.includes('.')) return VALIDATION_INVALID
+  return VALIDATION_VALID
 }
 
 export function validatePhone(phone: string): string {
-  if (phone.length < 10) return 'error'
-  if (!/^\d+$/.test(phone)) return 'error'
-  return 'valid'
+  if (phone.length < 10) return VALIDATION_ERROR
+  if (!/^\d+$/.test(phone)) return VALIDATION_ERROR
+  return VALIDATION_VALID
 }
 
 // S107 — too many parameters (8+)
-export function buildMessage(
-  a: string,
-  b: string,
-  c: string,
-  d: string,
-  e: string,
-  f: string,
-  g: string,
-  h: string
-): string {
-  return `${a}-${b}-${c}-${d}-${e}-${f}-${g}-${h}`
+export function buildMessage(...parts: string[]): string {
+  return parts.join('-')
 }
 
 // S1479 — switch with too many cases
