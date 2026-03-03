@@ -1,6 +1,7 @@
-# SonarQube + AI Auto-Fix — follows Markaicode article (Feb 2026).
+# SonarQube + AI Auto-Fix — contributor PR → Sonar reports issues → agent auto-picks and raises a fix PR.
+# On pull_request: runs on PR head, creates fix PR targeting the contributor's branch (so they can merge fix into their PR).
+# On push to main: runs on main, creates fix PR targeting main.
 # Secrets: SONAR_TOKEN, SONAR_HOST_URL (e.g. https://sonarcloud.io), ANTHROPIC_API_KEY
-# Vars (optional): SONAR_PROJECT (projectKey), SONAR_ORGANIZATION (for SonarCloud)
 
 name: SonarQube + AI Auto-Fix
 
@@ -21,6 +22,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # On PR: checkout contributor's branch so the fix PR targets it (merge fix into their branch)
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
@@ -115,13 +118,13 @@ jobs:
           commit-message: 'fix: Auto-resolve SonarQube issues with AI'
           title: '🤖 AI Fix: SonarQube Code Quality Issues'
           body: |
-            This PR automatically fixes SonarQube issues detected in the latest scan.
+            This PR automatically fixes SonarQube issues detected on this branch.
 
             **Fixed Issues:** ${{ steps.sonar_issues.outputs.found_issues }} issues addressed
 
             **AI Model:** Claude Sonnet 4
             **Validation:** Build and lint passed ✅
 
-            Please review the changes before merging.
+            When this run was triggered by a **pull request**, this fix PR targets the contributor's branch—merge this PR first to add the fixes to the original PR. When triggered by a **push to main**, it targets the default branch.
           branch: sonar-ai-fixes-${{ github.run_number }}
           delete-branch: true

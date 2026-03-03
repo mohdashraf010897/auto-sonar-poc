@@ -1,0 +1,52 @@
+// Trigger GitHub Copilot coding agent from Jenkins via Issue Assignment API.
+// Creates an issue in the target repo and assigns it to Copilot; Copilot (cloud) then works on it and opens a PR.
+//
+// Jenkins setup:
+//   - Credentials: Secret text, ID 'github-copilot-token' (GitHub PAT with repo + issues; user must have Copilot)
+//   - Agent: must have 'gh' CLI and 'jq' installed (or use trigger-copilot-curl.sh and only jq)
+//   - Either: (1) Run this pipeline from a repo that contains trigger-copilot-gh.sh (Pipeline from SCM), or
+//             (2) Use the inline "Trigger Copilot agent (inline)" stage below and remove the script-based stage.
+//
+// Example: Jenkins repo myorg/jenkins-pipelines — set GITHUB_OWNER=myorg, GITHUB_REPO=jenkins-pipelines.
+
+pipeline {
+  agent any
+
+  parameters {
+    string(name: 'GITHUB_OWNER', defaultValue: 'jenkinsci', description: 'GitHub org or user, e.g. jenkinsci or myorg')
+    string(name: 'GITHUB_REPO', defaultValue: 'jenkins', description: 'Repo name, e.g. jenkins or jenkins-pipelines')
+    string(name: 'ISSUE_TITLE', defaultValue: 'Fix Sonar issues (triggered from Jenkins)', description: 'Issue title for Copilot')
+    text(name: 'ISSUE_BODY', defaultValue: 'Address SonarQube/code quality findings. Open a PR when done.', description: 'Issue body')
+    string(name: 'CUSTOM_INSTRUCTIONS', defaultValue: 'Run in this repo; fix safe issues only; open a single PR.', description: 'Extra instructions for Copilot')
+    string(name: 'BASE_REF', defaultValue: 'main', description: 'Base branch for Copilot to branch from')
+  }
+
+  environment {
+    GITHUB_OWNER  = "${params.GITHUB_OWNER}"
+    GITHUB_REPO   = "${params.GITHUB_REPO}"
+    ISSUE_TITLE   = "${params.ISSUE_TITLE}"
+    ISSUE_BODY    = "${params.ISSUE_BODY}"
+    CUSTOM_INSTRUCTIONS = "${params.CUSTOM_INSTRUCTIONS}"
+    BASE_REF      = "${params.BASE_REF}"
+    GITHUB_TOKEN  = credentials('github-copilot-token')
+  }
+
+  stages {
+    stage('Trigger Copilot agent') {
+      steps {
+        // If Jenkinsfile is in docs/examples/jenkins/, run from that dir so ./trigger-copilot-gh.sh works
+        dir('docs/examples/jenkins') {
+          sh 'chmod +x trigger-copilot-gh.sh && ./trigger-copilot-gh.sh'
+        }
+      }
+    }
+  }
+  post {
+    success {
+      echo 'Issue created and assigned to Copilot. Check the repo Agents tab or PRs for the agent PR.'
+    }
+    failure {
+      echo 'Failed to trigger Copilot. Check token (repo + issues + Copilot) and that Copilot is enabled for the repo.'
+    }
+  }
+}

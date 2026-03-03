@@ -4,12 +4,29 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 
 ---
 
+## Contributor PR → Sonar issues → Agent fix PR (end-to-end)
+
+When a **contributor opens a PR**, the GitHub + Sonar integration (this workflow) runs a Sonar scan and reports issues on the PR. The **agent (AI fixer)** automatically:
+
+1. **Picks up** the Sonar issues (fetched from Sonar API after the scan).
+2. **Generates fixes** with Claude and applies them (build + lint validated).
+3. **Raises a fix PR** that **targets the contributor’s branch** (not main).
+
+So the contributor sees: their PR has Sonar issues → a **“🤖 AI Fix: SonarQube Code Quality Issues”** PR appears that merges **into their branch**. They merge the fix PR first; their original PR then includes the fixes and is ready for review/merge. No manual “fix Sonar” step.
+
+- **On `pull_request`:** Checkout is the **PR head** (contributor’s branch). The created fix PR therefore targets that branch.
+- **On `push` to main:** Checkout is main; the fix PR targets the default branch.
+
+See **Current pipeline** below for the exact steps.
+
+---
+
 ## Current pipeline (article flow)
 
 **Workflow:** `.github/workflows/sonar-ai-fix.yml` (only Sonar automation; report-only `sonar-issues-pr.yml` removed).  
 **Triggers:** `pull_request` on main/develop, `push` on main.
 
-1. **Checkout** — full history (`fetch-depth: 0`).
+1. **Checkout** — full history (`fetch-depth: 0`). On `pull_request`, checkout is the **PR head** so the fix PR targets the contributor’s branch.
 2. **SonarQube Scan** — `sonarsource/sonarqube-scan-action@v2` (SONAR_TOKEN, SONAR_HOST_URL; args: projectKey, sources, exclusions). Works with SonarCloud when SONAR_HOST_URL=https://sonarcloud.io.
 3. **Get SonarQube Issues** — `sleep 10` then `curl` to `/api/issues/search?projectKeys=...&resolved=false&severities=MAJOR,CRITICAL,BLOCKER,MINOR&ps=100` → `sonar-issues.json`; output `found_issues` from `.total`. (MINOR included so cognitive complexity, duplicate literals, console.log, etc. are fetched.)
 4. **Setup Node.js 22** — `actions/setup-node@v4` with node-version 22.
@@ -17,12 +34,20 @@ We **strictly follow** the [Markaicode article](https://markaicode.com/sonarqube
 6. **Generate AI Fixes** — if `found_issues > 0`: `node scripts/ai-fix-sonar.js` (reads `sonar-issues.json`, ±5 lines context, Claude, writes `ai-fixes.json`).
 7. **Apply Fixes with Validation** — if `found_issues > 0`: inline Node script replaces `original` → `fixed` in each file; then `pnpm run build` and `pnpm run lint`.
 8. **Security Scan on Fixes** — grep for `eval(` and `dangerouslySetInnerHTML`; exit 1 if found.
-9. **Create Fix PR** — if `found_issues > 0`: `peter-evans/create-pull-request@v6` (branch `sonar-ai-fixes-$run_number`, title/body per article).
+9. **Create Fix PR** — if `found_issues > 0`: `peter-evans/create-pull-request@v6` (branch `sonar-ai-fixes-$run_number`). When run was triggered by a PR, the fix PR targets the contributor’s branch; when triggered by push to main, it targets main.
 
 **Secrets:** `SONAR_TOKEN`, `SONAR_HOST_URL` (e.g. `https://sonarcloud.io`), `ANTHROPIC_API_KEY`.  
 **Vars (optional):** `SONAR_PROJECT`.
 
 **Script:** `scripts/ai-fix-sonar.js` — Claude as developer/Sonar fixer; ±CONTEXT_LINES (default 12) around issue line; larger context (≥15) for complexity rules (S3776, S138, S1541). Prompt asks for proper refactors (extract helpers, reduce complexity). Writes `ai-fixes.json`. Env: `CONTEXT_LINES`, `ANTHROPIC_MODEL`.
+
+---
+
+## Checkpoint: Phase 1 complete → Phase 2
+
+**Phase 1 (above)** is complete and validated: Claude + GitHub Action fix PR is working; fix PR targets contributor’s branch on PR trigger.
+
+Before starting **Phase 2** (GitHub Copilot agent POC), the checkpoint is documented in **[CHECKPOINT-PHASE1-TO-PHASE2.md](./CHECKPOINT-PHASE1-TO-PHASE2.md)** — criteria met, decision to proceed, and what Phase 2 entails. Work on the Copilot POC (run end-to-end, then decide in-repo vs Copilot vs both) happens after this checkpoint.
 
 ---
 

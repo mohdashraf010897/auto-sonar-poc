@@ -1,0 +1,71 @@
+# POC: Contributor PR → Sonar reports issues → assign to GitHub Copilot (Agents on GitHub) → Copilot opens fix PR.
+# When Sonar finds issues on a PR, this workflow creates an issue and assigns it to Copilot; Copilot then works and opens a PR.
+#
+# Secrets: SONAR_TOKEN, SONAR_HOST_URL, COPILOT_ASSIGNMENT_TOKEN (GitHub PAT: repo + issues; user must have Copilot)
+# Enable: Copilot coding agent for this repo (Settings → Copilot → Agents)
+
+name: POC — Sonar → Copilot Agent
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  sonar-then-copilot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT || 'mohdashraf010897_auto-sonar-poc' }}
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/*test*/**
+        continue-on-error: true
+
+      - name: Get SonarQube Issues
+        id: sonar_issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_PROJECT: ${{ vars.SONAR_PROJECT || 'mohdashraf010897_auto-sonar-poc' }}
+        run: |
+          sleep 10
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_HOST_URL" ]; then
+            echo '{"total":0,"issues":[]}' > sonar-issues.json
+            echo "found_issues=0" >> $GITHUB_OUTPUT
+            echo "No SONAR_TOKEN or SONAR_HOST_URL — skipping fetch."
+            exit 0
+          fi
+          curl -s -u "$SONAR_TOKEN:" \
+            "${SONAR_HOST_URL}/api/issues/search?projectKeys=${SONAR_PROJECT}&resolved=false&severities=MAJOR,CRITICAL,BLOCKER,MINOR&ps=100" \
+            -o sonar-issues.json
+          ISSUE_COUNT=$(jq '.total // (.issues | length)' sonar-issues.json)
+          echo "found_issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            echo "Found $ISSUE_COUNT issues — will assign to Copilot (POC)"
+          fi
+
+      - name: Assign to Copilot (Agents on GitHub)
+        if: steps.sonar_issues.outputs.found_issues != '0' && steps.sonar_issues.outputs.found_issues != ''
+        env:
+          COPILOT_ASSIGNMENT_TOKEN: ${{ secrets.COPILOT_ASSIGNMENT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.head_ref }}
+          PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+          SONAR_ISSUE_COUNT: ${{ steps.sonar_issues.outputs.found_issues }}
+          BASE_REF: ${{ github.head_ref || github.ref_name || 'main' }}
+        run: node scripts/trigger-copilot-via-issue.js
