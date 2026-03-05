@@ -58,7 +58,8 @@ export function classifyTodoStatus(
   return 'unknown'
 }
 
-// S107 — too many parameters (8+)
+// Uses rest parameters instead of 8 positional args to satisfy S107 (max parameters rule).
+// Accepts any number of string fields and joins them with a '-' separator.
 export function mergeFields(...fields: string[]): string {
   return fields.join('-')
 }

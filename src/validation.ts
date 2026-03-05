@@ -11,24 +11,28 @@ export function logValidationError(msg: string): void {
 // S1135 — TODO comment
 // TODO: refactor this module
 
-// S1192 — duplicate string literal (repeated 'invalid' and 'error')
+// Shared validation result constants — extracted to avoid duplicate string literals (S1192).
+// Using named constants makes the intended meaning clear and ensures consistency across functions.
 const VALIDATION_INVALID = 'invalid'
 const VALIDATION_ERROR = 'error'
 const VALIDATION_VALID = 'valid'
 
+// Returns 'invalid' if the email is missing '@' or '.'; otherwise 'valid'.
 export function validateEmail(email: string): string {
   if (!email.includes('@')) return VALIDATION_INVALID
   if (!email.includes('.')) return VALIDATION_INVALID
   return VALIDATION_VALID
 }
 
+// Returns 'error' if the phone is too short or contains non-digit characters; otherwise 'valid'.
 export function validatePhone(phone: string): string {
   if (phone.length < 10) return VALIDATION_ERROR
   if (!/^\d+$/.test(phone)) return VALIDATION_ERROR
   return VALIDATION_VALID
 }
 
-// S107 — too many parameters (8+)
+// Uses rest parameters instead of 8 positional args to satisfy S107 (max parameters rule).
+// Joins all provided parts with a '-' separator into a single message string.
 export function buildMessage(...parts: string[]): string {
   return parts.join('-')
 }
