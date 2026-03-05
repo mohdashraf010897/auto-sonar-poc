@@ -32,7 +32,8 @@
 .add button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  background: #646cff;
+  /* #4338ca (indigo-700) passes WCAG AA contrast ratio (≥4.5:1) against white text — fixes S7924 */
+  background: #4338ca;
   color: white;
   border: none;
   border-radius: 6px;
@@ -40,7 +41,8 @@
 }
 
 .add button:hover {
-  background: #535bf2;
+  /* #3730a3 (indigo-800) — darker hover state, also passes WCAG AA contrast against white */
+  background: #3730a3;
 }
 
 .list {
