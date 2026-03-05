@@ -11,11 +11,8 @@ export function logValidationError(msg: string): void {
 // S1135 — TODO comment
 // TODO: refactor this module
 
-// Shared validation result constants — extracted to avoid duplicate string literals (S1192).
-// Using named constants makes the intended meaning clear and ensures consistency across functions.
-const VALIDATION_INVALID = 'invalid'
-const VALIDATION_ERROR = 'error'
-const VALIDATION_VALID = 'valid'
+// Validation result constants are defined in constants.ts to keep them reusable across modules.
+import { VALIDATION_INVALID, VALIDATION_ERROR, VALIDATION_VALID } from './constants'
 
 // Returns 'invalid' if the email is missing '@' or '.'; otherwise 'valid'.
 export function validateEmail(email: string): string {
