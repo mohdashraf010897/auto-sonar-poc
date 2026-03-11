@@ -10,32 +10,36 @@ export function logValidationError(msg: string): void {
 
 // S1135 — TODO comment
 // TODO: refactor this module
+// Constants for validation results
+const INVALID_RESULT = 'invalid';
+const ERROR_RESULT = 'error';
+const VALID_RESULT = 'valid';
 
-// S1192 — duplicate string literal (repeated 'invalid' and 'error')
 export function validateEmail(email: string): string {
-  if (!email.includes('@')) return 'invalid'
-  if (!email.includes('.')) return 'invalid'
-  return 'valid'
+  if (!email.includes('@')) return INVALID_RESULT;
+  if (!email.includes('.')) return INVALID_RESULT;
+  return VALID_RESULT;
 }
 
 export function validatePhone(phone: string): string {
-  if (phone.length < 10) return 'error'
-  if (!/^\d+$/.test(phone)) return 'error'
-  return 'valid'
+  if (phone.length < 10) return ERROR_RESULT;
+  if (!/^\d+$/.test(phone)) return ERROR_RESULT;
+  return VALID_RESULT;
 }
 
-// S107 — too many parameters (8+)
-export function buildMessage(
-  a: string,
-  b: string,
-  c: string,
-  d: string,
-  e: string,
-  f: string,
-  g: string,
-  h: string
-): string {
-  return `${a}-${b}-${c}-${d}-${e}-${f}-${g}-${h}`
+interface MessageParts {
+  a: string;
+  b: string;
+  c: string;
+  d: string;
+  e: string;
+  f: string;
+  g: string;
+  h: string;
+}
+
+export function buildMessage(parts: MessageParts): string {
+  return `${parts.a}-${parts.b}-${parts.c}-${parts.d}-${parts.e}-${parts.f}-${parts.g}-${parts.h}`;
 }
 
 // S1479 — switch with too many cases
@@ -65,7 +69,7 @@ export function deepCheck(
   d: boolean
 ): string {
   if (a) {
-    if (b) {
+if (b) {
       if (c) {
         if (d) {
           return 'all-true'
@@ -79,23 +83,47 @@ export function deepCheck(
   return 'a-false'
 }
 
-// S3776 + S138 — high cognitive complexity and too many lines
+// Constants for score ranges
+const SCORE_RANGES = {
+  LOW: { min: 0, max: 10 },
+  MEDIUM: { min: 10, max: 50 },
+  HIGH: { min: 50, max: 100 }
+} as const;
+
+// Helper function to determine score category
+function getScoreCategory(score: number): 'low' | 'medium' | 'high' | null {
+  if (score > 0 && score < SCORE_RANGES.LOW.max) return 'low';
+  if (score >= SCORE_RANGES.MEDIUM.min && score < SCORE_RANGES.MEDIUM.max) return 'medium';
+  if (score >= SCORE_RANGES.HIGH.min && score < SCORE_RANGES.HIGH.max) return 'high';
+  return null;
+}
+
+// Helper function to build priority string with modifiers
+function buildPriorityString(category: string, urgent: boolean, expired: boolean): string {
+  const modifiers = [];
+  if (urgent) modifiers.push('urgent');
+  if (expired) modifiers.push('expired');
+  
+  return modifiers.length > 0 ? `${category}-${modifiers.join('-')}` : category;
+}
+
 export function classifyPriority(
   score: number,
   urgent: boolean,
   expired: boolean
 ): string {
-  if (score < 0) return 'invalid'
-  if (score === 0 && !urgent) return 'none'
-  if (score === 0 && urgent) return 'urgent-none'
-  if (score > 0 && score < 10 && !urgent && !expired) return 'low'
-  if (score > 0 && score < 10 && urgent && !expired) return 'low-urgent'
-  if (score > 0 && score < 10 && !urgent && expired) return 'low-expired'
-  if (score >= 10 && score < 50 && !urgent && !expired) return 'medium'
-  if (score >= 10 && score < 50 && urgent && !expired) return 'medium-urgent'
-  if (score >= 10 && score < 50 && !urgent && expired) return 'medium-expired'
-  if (score >= 50 && score < 100 && !urgent && !expired) return 'high'
-  if (score >= 50 && score < 100 && urgent && !expired) return 'high-urgent'
+  if (score < 0) return 'invalid';
+  
+  if (score === 0) {
+    return urgent ? 'urgent-none' : 'none';
+  }
+  
+  const category = getScoreCategory(score);
+  if (category) {
+    return buildPriorityString(category, urgent, expired);
+  }
+  
+  return 'unknown';
   if (score >= 50 && score < 100 && !urgent && expired) return 'high-expired'
   if (score >= 100 && !urgent && !expired) return 'critical'
   if (score >= 100 && urgent && !expired) return 'critical-urgent'
