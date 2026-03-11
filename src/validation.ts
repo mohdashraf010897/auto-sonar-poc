@@ -11,31 +11,27 @@ export function logValidationError(msg: string): void {
 // S1135 — TODO comment
 // TODO: refactor this module
 
-// S1192 — duplicate string literal (repeated 'invalid' and 'error')
+// Validation result constants are defined in constants.ts to keep them reusable across modules.
+import { VALIDATION_INVALID, VALIDATION_ERROR, VALIDATION_VALID } from './constants'
+
+// Returns 'invalid' if the email is missing '@' or '.'; otherwise 'valid'.
 export function validateEmail(email: string): string {
-  if (!email.includes('@')) return 'invalid'
-  if (!email.includes('.')) return 'invalid'
-  return 'valid'
+  if (!email.includes('@')) return VALIDATION_INVALID
+  if (!email.includes('.')) return VALIDATION_INVALID
+  return VALIDATION_VALID
 }
 
+// Returns 'error' if the phone is too short or contains non-digit characters; otherwise 'valid'.
 export function validatePhone(phone: string): string {
-  if (phone.length < 10) return 'error'
-  if (!/^\d+$/.test(phone)) return 'error'
-  return 'valid'
+  if (phone.length < 10) return VALIDATION_ERROR
+  if (!/^\d+$/.test(phone)) return VALIDATION_ERROR
+  return VALIDATION_VALID
 }
 
-// S107 — too many parameters (8+)
-export function buildMessage(
-  a: string,
-  b: string,
-  c: string,
-  d: string,
-  e: string,
-  f: string,
-  g: string,
-  h: string
-): string {
-  return `${a}-${b}-${c}-${d}-${e}-${f}-${g}-${h}`
+// Uses rest parameters instead of 8 positional args to satisfy S107 (max parameters rule).
+// Joins all provided parts with a '-' separator into a single message string.
+export function buildMessage(...parts: string[]): string {
+  return parts.join('-')
 }
 
 // S1479 — switch with too many cases
