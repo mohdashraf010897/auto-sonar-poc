@@ -32,7 +32,7 @@
 .add button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  background: #646cff;
+  background: #4c54d9;
   color: white;
   border: none;
   border-radius: 6px;
@@ -40,7 +40,7 @@
 }
 
 .add button:hover {
-  background: #535bf2;
+  background: #3c44c9;
 }
 
 .list {
