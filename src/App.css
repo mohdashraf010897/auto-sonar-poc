@@ -33,12 +33,11 @@
   padding: 0.5rem 1rem;
   font-size: 1rem;
   background: #646cff;
-  color: white;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
-
 .add button:hover {
   background: #535bf2;
 }
